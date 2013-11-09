@@ -106,6 +106,9 @@ object PlayOAuthBuild extends Build {
     )
   ).dependsOn(playOAuthCommon).aggregate(playOAuthCommon)
 
+  val playOauthModule:Project = play.Project(projectName+"-module", buildVersion, Seq(), file("play-oauth-module"))
+    .settings(Publish.settings: _*)
+
   lazy val root = project.in(file("."))
     .settings(buildSettings: _*)
     .settings(unidocSettings: _*)
@@ -115,7 +118,7 @@ object PlayOAuthBuild extends Build {
       site.addMappingsToSiteDir(mappings in (ScalaUnidoc, packageDoc), "latest/api"),
       git.gitRemoteRepo := "git@github.com:njin-fr/play-oauth.git"
     )
-    .aggregate(PlayOAuthBuild.playOAuth)
+    .aggregate(playOAuth, playOauthModule)
 }
 
 object PlayAuthServerBuild extends Build {
@@ -133,12 +136,14 @@ object PlayAuthServerBuild extends Build {
     "com.github.seratch"  %% "scalikejdbc-async-play-plugin" % "[0.2,)",
     "com.github.tototoshi" %% "play-flyway" % "1.0.0-SNAPSHOT",
 
-    "com.github.seratch" %% "scalikejdbc-test" % "[1.6,)"  % "test"
+    "com.github.seratch" %% "scalikejdbc-test" % "[1.6,)"  % "test"/*,
+    "fr.njin" %% "play-oauth-module" % "1.0.0-SNAPSHOT"*/
+
   )
 
   val main:Project = play.Project(appName, appVersion, appDependencies, file("play-oauth-server"))
     .settings()
-    .dependsOn(PlayOAuthBuild.playOAuth, flywayPlugin).aggregate(flywayPlugin)
+    .dependsOn(PlayOAuthBuild.playOAuth, PlayOAuthBuild.playOauthModule, flywayPlugin).aggregate(flywayPlugin)
 
   lazy val flywayPlugin = Project (
     id = "flywayPlugin",
